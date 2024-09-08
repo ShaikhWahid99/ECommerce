@@ -11,15 +11,20 @@ import {
   MenuItems,
 } from "@headlessui/react";
 import {
-  ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, FunnelIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  FunnelIcon,
   MinusIcon,
   PlusIcon,
-  Squares2X2Icon
-} from '@heroicons/react/20/solid';
+  Squares2X2Icon,
+  StarIcon,
+} from "@heroicons/react/20/solid";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { increment, selectCount } from "../productSlice";
+import { fetchAllProductsAsync, selectAllProducts } from "../productSlice";
+import { increment } from "../path/to/incrementFunction";
 
 const sortOptions = [
   { name: "Most Popular", href: "#", current: true },
@@ -31,8 +36,8 @@ const sortOptions = [
 
 const filters = [
   {
-    id: "color",
-    name: "Color",
+    id: "brand",
+    name: "Brand",
     options: [
       { value: "white", label: "White", checked: false },
       { value: "beige", label: "Beige", checked: false },
@@ -46,11 +51,11 @@ const filters = [
     id: "category",
     name: "Category",
     options: [
-      { value: "new-arrivals", label: "New Arrivals", checked: false },
-      { value: "sale", label: "Sale", checked: false },
-      { value: "travel", label: "Travel", checked: true },
-      { value: "organization", label: "Organization", checked: false },
-      { value: "accessories", label: "Accessories", checked: false },
+      { value: "smartphone", label: "smartphone", checked: false },
+      { value: "laptops", label: "laptops", checked: false },
+      { value: "fragrance", label: "fragrance", checked: true },
+      { value: "groceries", label: "groceries", checked: false },
+      { value: "home-decoration", label: "home-decoration", checked: false },
     ],
   },
   {
@@ -71,25 +76,16 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-const products = [
-  {
-    id: 1,
-    name: "Basic Tee",
-    href: "#",
-    imageSrc:
-      "https://tailwindui.com/img/ecommerce-images/product-page-01-related-product-01.jpg",
-    imageAlt: "Front of men's Basic Tee in black.",
-    price: "$35",
-    color: "Black",
-  },
-  // Add more products if needed
-];
+
 
 export default function ProductList() {
-  const count = useSelector(selectCount);
   const dispatch = useDispatch();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const products = useSelector(selectAllProducts);
+  useEffect(() =>{
+    dispatch(fetchAllProductsAsync())
 
+  },[dispatch])
   const handleProductClick = () => {
     dispatch(increment());
   };
@@ -316,22 +312,37 @@ export default function ProductList() {
                       <div className="mx-auto max-w-2xl px-4 py-0 sm:px-6 sm:py-0 lg:max-w-7xl lg:px-8">
                         <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
                           {products.map((product) => (
-                            <div key={product.id} className="group relative">
+                            <div key={product.id} className="group relative border-solid border-2 p-2 border-gray-200">
                               <a href="/product-detail">
                                 <div className="relative w-full h-48 bg-gray-100">
                                   <img
-                                    src={product.imageSrc}
-                                    alt={product.imageAlt}
+                                    src={product.thumbnail}
+                                    alt={product.title}
                                     className="absolute inset-0 w-full h-full object-cover"
                                   />
                                 </div>
+
                                 <h3 className="mt-4 text-lg font-semibold text-gray-900">
                                   {product.name}
                                 </h3>
-                                <p className="text-sm text-gray-500">{product.color}</p>
-                                <p className="mt-1 text-lg font-medium text-gray-900">
-                                  {product.price}
+                                <p className="text-sm text-gray-500">
+                                  <StarIcon className="w-6 h-6 inline"></StarIcon>
+                                  {product.rating}
                                 </p>
+                                <div />
+                                <div>
+                                
+                                  <p className="text-sm block font-medium text-gray-900">
+                                    $
+                                    {Math.round(
+                                      product.price *
+                                        (1 - product.discountPercentage / 100)
+                                    )}
+                                  </p>
+                                  <p className="text-sm block line-through font-medium text-gray-400">
+                                    ${product.price}
+                                  </p>
+                                </div>
                               </a>
                               <button
                                 onClick={handleProductClick}
@@ -365,18 +376,25 @@ export default function ProductList() {
                 <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">1</span> to <span className="font-medium">10</span> of{' '}
+                      Showing <span className="font-medium">1</span> to{" "}
+                      <span className="font-medium">10</span> of{" "}
                       <span className="font-medium">97</span> results
                     </p>
                   </div>
                   <div>
-                    <nav aria-label="Pagination" className="isolate inline-flex -space-x-px rounded-md shadow-sm">
+                    <nav
+                      aria-label="Pagination"
+                      className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                    >
                       <a
                         href="#"
                         className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
                       >
                         <span className="sr-only">Previous</span>
-                        <ChevronLeftIcon aria-hidden="true" className="h-5 w-5" />
+                        <ChevronLeftIcon
+                          aria-hidden="true"
+                          className="h-5 w-5"
+                        />
                       </a>
                       <a
                         href="#"
@@ -423,7 +441,10 @@ export default function ProductList() {
                         className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
                       >
                         <span className="sr-only">Next</span>
-                        <ChevronRightIcon aria-hidden="true" className="h-5 w-5" />
+                        <ChevronRightIcon
+                          aria-hidden="true"
+                          className="h-5 w-5"
+                        />
                       </a>
                     </nav>
                   </div>
